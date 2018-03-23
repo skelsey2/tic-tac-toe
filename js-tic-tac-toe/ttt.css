@@ -127,4 +127,18 @@ input:focus + .slider {
 
 /*
 ----------------------------------------------------------------
+
+gameover state
 */
+
+.gameOver {
+    display: none;
+    position: absolute;
+    margin-left: 33%;
+    margin-top: 15%;
+    height: 100px;
+    width: 35%;
+    background-color: chartreuse;
+    text-align: center;
+
+}

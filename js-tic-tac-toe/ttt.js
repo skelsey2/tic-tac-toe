@@ -1,33 +1,33 @@
 var playerTurn = 1;
+var game;
 
 window.onload = function () {
 
     document.getElementById('startBtn').addEventListener('click', startgame, false);
 }
-var game;
 function startgame() {
     game = new tttgame();
 
-    game.addBoardListeners();
+    game.startGame();
     // console.log(game);
 }
 
 
 
-
 function tttgame() {
 
+    /**
+     *  Board Piece Symbols 
+     */
     const x = 'X';
     const o = 'O';
+    const MAX_MOVE_COUNT = 9;
+    let moveCount = 0;
 
-    this.tttboard = document.getElementById('tableBoard');
-    this.tttRow1 = document.getElementById('row1');
-    this.tttRow2 = document.getElementById('row2');
-    this.tttRow3 = document.getElementById('row3');
-  /**
-     *  2D Array
-     *  Array of Winning Combo Indexes Arrays
-     */
+    /**
+       *  2D Array
+       *  Array of Winning Combo Indexes Arrays
+       */
     let winningCombos = [
         // horizontal
         [0, 1, 2],
@@ -46,63 +46,78 @@ function tttgame() {
     ];
 
     // Single Player vs AI
-    this.useAi = document.getElementById('useAi').checked;
+    let useAi = document.getElementById('useAi').checked;
+
+
+    // Start Game
+    this.startGame = function () {
+
+        // Disable Start btn
+        document.getElementById('startBtn').disabled = true;
+
+        let gameOverElement = document.getElementsByClassName("gameOver")[0];
+        gameOverElement.style.display = 'none';
+
+        addBoardListeners();
+    }
 
     // Click listeners to board
-    this.addBoardListeners = function () {
-        console.log('addBoardListeners');
+    let addBoardListeners = function () {
+
         document.querySelectorAll('.cell').forEach(cell => {
             cell.innerHTML = ' ';
             cell.addEventListener('click', turnClick, false);
+            cell.style.cursor = 'pointer';
+        })
+    }
+    let removeBoardListeners = function () {
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.removeEventListener('click', turnClick, false);
+            cell.style.cursor = 'default';
         })
     }
 
     // Callback fn
-    turnClick = function (context) {
+    let turnClick = function (context) {
 
-
+        moveCount++;
         context.target.removeEventListener('click', turnClick, false);
         if (playerTurn === 1) {
+            context.target.style.cursor = 'default';
             context.target.innerHTML = x;
             isGameOver();
             playerTurn = 2;
         } else {
+            context.target.style.cursor = 'default';
             context.target.innerHTML = o;
             isGameOver();
             playerTurn = 1;
         }
 
-       
+
     }
 
-    isGameOver = function () {
-        
+    let isGameOver = function () {
+
         let playerSymbol = (playerTurn === 1) ? x : o;
-        console.log('PlayerSymbol: ' + playerSymbol);
         let boardState = getboardState();
-        console.log('isGameOver');
-        console.log(boardState);
-        console.log(winningCombos);
 
 
         // Scan for winning combos
         for (let wcIterator = 0; wcIterator < winningCombos.length; wcIterator++) {
-            console.log('Checking winning combos for: ');
             let currentWc = winningCombos[wcIterator];
-            console.log(currentWc);
 
             let playerCombo = [];
             for (let i = 0; i < currentWc.length; i++) {
-                console.log('boardState at i: ' + boardState[currentWc[i]] + ' i: ' + i);
-                playerCombo.push( (boardState[currentWc[i]]  == playerSymbol) ? currentWc[i] : null);
+                playerCombo.push((boardState[currentWc[i]] == playerSymbol) ? currentWc[i] : null);
             }
-            console.log('PlayerCombo: ');
-            console.log(playerCombo);
-            
-            if(playerCombo.join() == currentWc.join()){
-                alert('winner!');
-            }else{
-                console.log('no winner');
+
+            if (playerCombo.join() == currentWc.join()) {
+                gameOver(false);
+            } else if ( moveCount >= MAX_MOVE_COUNT) {
+                gameOver(true);
+            } else {
+                // console.log('no winner');
             }
         }
 
@@ -114,7 +129,7 @@ function tttgame() {
      *      e.g.
      *  ["X", "O", "", "", "X", "O", "", "", "X"]
      */
-    getboardState = function () {
+    let getboardState = function () {
 
         boardStateArray = [];
         boardState = [
@@ -131,17 +146,25 @@ function tttgame() {
         return boardStateArray;
     }
 
-  
+
+    let gameOver = function(isDraw) { 
+
+        let gameOverMessage = (isDraw) ? 'Game is a Draw!' : `Winner is Player ${playerTurn}`;
+        
+        document.getElementById('gameOverWinner').innerHTML = gameOverMessage;
+
+        let gameOverElement = document.getElementsByClassName("gameOver")[0];
+        gameOverElement.style.display = 'block';
+
+        removeBoardListeners();
+
+        document.getElementById('startBtn').disabled = false;
+
+    }
 
 
 }
 
-//create [ [], [], []]
-//---------
-// have to select all values from the board
-// select 1 i'll get an x or o 
-// if playerTurn symbol add to array?
-// check them for winning combos
 
 
 
